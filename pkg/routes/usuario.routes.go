@@ -7,11 +7,13 @@ import (
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
- 
-func InitUsuarioRoutes(router *mux.Router,db *gorm.DB, authorizeRequest func(next http.Handler, tokened bool) http.Handler) {
+
+func InitUsuarioRoutes(router *mux.Router, db *gorm.DB, authorizeRequest func(next http.Handler, tokened bool) http.Handler) {
 	userApi := api.InitializeUsuarioApi(db)
-	
 	router.Handle("/login", authorizeRequest(userApi.Login(), false)).Methods("POST")
-	router.Handle("/register", authorizeRequest(userApi.RegisterUser(), false)).Methods("POST")
+	usersRouter := router.PathPrefix("/usuario").Subrouter()
+	usersRouter.Handle("/register", authorizeRequest(userApi.RegisterUser(), true)).Methods("POST")
+	usersRouter.Handle("/change_state", authorizeRequest(userApi.ChangeStateUser(), true)).Methods("POST")
+	usersRouter.Handle("/list", authorizeRequest(userApi.GetAllUsers(), true)).Methods("GET")
 
 }

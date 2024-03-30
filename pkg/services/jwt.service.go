@@ -9,11 +9,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(user models.Usuario) (models.Token, error) {
+func GenerateToken(user *models.Usuario) (models.Token, error) {
 	expiration := time.Now().Add(time.Hour * 7)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email":      user.Email,
 		"name":       user.Nombre,
+		"apellido":   user.Apellido,
+		"rol_id":     user.RolID,
 		"id":         strconv.Itoa(user.ID),
 		"expiration": expiration.Unix(),
 	})

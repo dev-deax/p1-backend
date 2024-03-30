@@ -8,9 +8,11 @@ type PuntoControl struct {
 	Nombre          string  `gorm:"type:varchar(255)" json:"nombre"`
 	TarifaOperacion float64 `gorm:"type:float" json:"tarifa_operacion"`
 	CapacidadCola   int     `gorm:"type:int" json:"capacidad_cola"`
+	Activo          bool    `gorm:"default:true" json:"activo"`
+	UsuarioID       int     `json:"usuario_id"`
 	RutaID          int     `json:"ruta_id"`
 	Ruta            Ruta
+	Paquetes        []Paquete `gorm:"many2many:paquetes_puntos_controls;"`
+	// Usuarios        Usuario
 
-	Usuarios []Usuario `gorm:"many2many:usuarios_punto_controls"`
-	Paquetes []Paquete `gorm:"many2many:paquetes_puntos_controls;"`
 }

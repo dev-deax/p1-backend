@@ -17,6 +17,5 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/crypto v0.21.0
-	golang.org/x/time v0.5.0
 	gorm.io/driver/mysql v1.5.6
 )

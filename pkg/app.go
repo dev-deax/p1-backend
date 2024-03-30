@@ -15,10 +15,9 @@ import (
 )
 
 type App struct {
-	Router      *mux.Router
-	DB          *gorm.DB
-	RateLimiter *middleware.RateLimiterStore
-	Config      *config.Config
+	Router *mux.Router
+	DB     *gorm.DB
+	Config *config.Config
 }
 
 func ConfigAndRunApp(config *config.Config) {
@@ -41,10 +40,12 @@ func (app *App) Initialize(config *config.Config) {
 	errMigrate := app.DB.AutoMigrate(&models.Usuario{},
 		&models.Cliente{},
 		&models.Paquete{},
+		&models.Destino{},
 		&models.Ruta{},
-		&models.Tarifa{},
 		&models.Factura{},
-		&models.ItemFactura{},
+		&models.Tarifas{},
+		// &models.Bodega{},
+		// &models.PaquetesDestinos{},
 		&models.PuntoControl{},
 		&models.PaquetesPuntosControl{})
 	if errMigrate != nil {
@@ -55,27 +56,36 @@ func (app *App) Initialize(config *config.Config) {
 	app.Router = mux.NewRouter()
 
 	// app.UseMiddleware(handler.JSONContentTypeMiddleware)
-	app.setRouters()
+	app.initRouters()
 }
 
 func (app *App) Run(host string) {
-	fmt.Printf("Server started at http://localhost%s\n", host)
+	fmt.Printf("El servidor en: http://localhost%s\n", host)
 	log.Fatal(http.ListenAndServe(host, app.Router))
 }
 
-func (app *App) setRouters() {
+func (app *App) initRouters() {
+	routes.InitRutaRoutes(app.Router, app.DB, app.authorizeRequest)
 	routes.InitUsuarioRoutes(app.Router, app.DB, app.authorizeRequest)
+	routes.InitClienteRoutes(app.Router, app.DB, app.authorizeRequest)
+	routes.InitPaqueteRoutes(app.Router, app.DB, app.authorizeRequest)
+	routes.InitPuntoControlRoutes(app.Router, app.DB, app.authorizeRequest)
 
-	routes := app.Router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+	errorRoutes := getRoutes(app.Router, app.Config.ServerHost)
+	if errorRoutes != nil {
+		fmt.Println("Error al obtener las rutas:", errorRoutes)
+	}
+}
+
+func getRoutes(Router *mux.Router, serverURL string) error {
+	errorRoutes := Router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, err := route.GetPathTemplate()
 		if err == nil {
-			fmt.Println("Ruta:", pathTemplate)
+			fmt.Printf("Ruta: http://localhost%s%s\n", serverURL, pathTemplate)
 		}
 		return nil
 	})
-	if routes != nil {
-		fmt.Println("Error al obtener las rutas:", routes)
-	}
+	return errorRoutes
 }
 
 func (app *App) authorizeRequest(next http.Handler, tokened bool) http.Handler {
