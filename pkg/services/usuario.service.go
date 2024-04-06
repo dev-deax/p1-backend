@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UsuarioService struct {
@@ -21,25 +22,27 @@ func (service *UsuarioService) Migrate() error {
 }
 
 func (service *UsuarioService) RegisterUser(register *models.Usuario) *models.ResponseMessage {
+	// Iniciar transacción
+	tx := service.db.Begin()
 	register.Password = HashPassword(register.Password)
-	user := models.Usuario{
-		Nombre:   register.Nombre,
-		Apellido: register.Apellido,
-		Email:    register.Email,
-		Password: register.Password,
-		RolID:    register.RolID,
-	}
-	err := service.db.Save(&user).Error
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	err := tx.Omit(clause.Associations).Create(&register).Error
 	if err != nil {
 		var mysqlError *mysql.MySQLError
 		if ok := errors.As(err, &mysqlError); ok {
 			if mysqlError.Number == 1062 {
+				tx.Rollback()
 				return &models.ResponseMessage{IsSuccessfull: false, Message: "El correo ya esta registrado, intente con otro"}
 			}
 		}
+		tx.Rollback()
 		return &models.ResponseMessage{IsSuccessfull: false, Message: err.Error()}
 	}
-
+	tx.Commit()
 	return &models.ResponseMessage{IsSuccessfull: true, Message: "Usuario registrado exitosamente"}
 }
 

@@ -51,3 +51,12 @@ func (service *ClienteService) GetAll(page int, limit int) *models.ResponseMessa
 	}
 	return &models.ResponseMessage{IsSuccessfull: true, Message: "Clientes obtenidas exitosamente", Data: clientes}
 }
+
+func (service *ClienteService) GetById(id int) *models.ResponseMessage {
+	var cliente models.Cliente
+	err := service.db.First(&cliente, id).Error
+	if err != nil {
+		return &models.ResponseMessage{IsSuccessfull: false, Message: err.Error()}
+	}
+	return &models.ResponseMessage{IsSuccessfull: true, Message: "Cliente obtenido exitosamente", Data: cliente}
+}

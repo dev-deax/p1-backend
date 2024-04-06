@@ -74,7 +74,7 @@ func (api *PuntoControlApi) GetByIdPuntoControl() http.HandlerFunc {
 		}
 		defer r.Body.Close()
 
-		response := api.service.GetById(PuntoControl.ID)
+		response := api.service.GetById(int(PuntoControl.ID))
 		status := http.StatusOK
 
 		if !response.IsSuccessfull {
@@ -110,7 +110,7 @@ func (api *PuntoControlApi) ChangeStateRuta() http.HandlerFunc {
 		}
 		defer r.Body.Close()
 
-		response := api.service.ChangeStatePuntoControl(model.ID, model.Activo)
+		response := api.service.ChangeStatePuntoControl(int(model.ID), model.Activo)
 		status := http.StatusOK
 
 		if !response.IsSuccessfull {
@@ -148,7 +148,7 @@ func (api *PuntoControlApi) GetPaquetesPuntosControlByUsuario() http.HandlerFunc
 		}
 		defer r.Body.Close()
 
-		response := api.service.GetPaquetesPuntosControlByUsuario(model.ID)
+		response := api.service.GetPaquetesPuntosControlByUsuario(int(model.ID))
 		status := http.StatusOK
 
 		if !response.IsSuccessfull {
@@ -167,7 +167,7 @@ func (api *PuntoControlApi) GetCostoByPuntoControl() http.HandlerFunc {
 		}
 		defer r.Body.Close()
 
-		response := api.service.GetCostoPaquetesPuntosControlByPuntoControl(model.ID)
+		response := api.service.GetCostoPaquetesPuntosControlByPuntoControl(int(model.ID))
 		status := http.StatusOK
 
 		if !response.IsSuccessfull {

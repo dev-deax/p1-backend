@@ -1,18 +1,14 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
 type Factura struct {
 	gorm.Model
-	ID        int       `gorm:"primaryKey" json:"id"`
-	Fecha     time.Time `gorm:"autoCreateTime" json:"fecha"`
-	ClienteID int
+	ID        int       `gorm:"primaryKey"`
+	Total     float64   `gorm:"autoCreateTime"`
 	Cliente   Cliente   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Total     float64   `gorm:"autoCreateTime" json:"total"`
-	PaqueteID int       `json:"paquete"` // FacturaID int `json:"factura"`
-	Paquetes  []Paquete `gorm:"many2many:detalle_factura;"`
+	Paquetes  []Paquete `gorm:"foreignKey:FacturaID"`
+	ClienteID int
 }

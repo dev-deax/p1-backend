@@ -11,6 +11,14 @@ type PuntoControlService struct {
 	db *gorm.DB
 }
 
+type RoleUsuario int
+
+const (
+	ADMIN         RoleUsuario = 1
+	OPERARIO      RoleUsuario = 2
+	RECEPCIONISTA RoleUsuario = 3
+)
+
 func InitializePuntoControlService(db *gorm.DB) *PuntoControlService {
 	return &PuntoControlService{db: db}
 }
@@ -18,6 +26,14 @@ func (service *PuntoControlService) Migrate() error {
 	return service.db.AutoMigrate(&models.Paquete{})
 }
 func (service *PuntoControlService) Create(create *models.PuntoControl) *models.ResponseMessage {
+	var usuario models.Usuario
+	errorUsuario := service.db.Where(`id = ?`, create.UsuarioID).First(&usuario).Error
+	if errorUsuario != nil {
+		return &models.ResponseMessage{IsSuccessfull: false, Message: errorUsuario.Error()}
+	}
+	if usuario.RolID != int(OPERARIO) {
+		return &models.ResponseMessage{IsSuccessfull: false, Message: "No puede asignar a este usuario a este punto de control, este usuario no es operario"}
+	}
 	err := service.db.Save(&create).Error
 	if err != nil {
 		return &models.ResponseMessage{IsSuccessfull: false, Message: err.Error()}
@@ -42,7 +58,7 @@ func (service *PuntoControlService) GetById(id int) *models.ResponseMessage {
 func (service *PuntoControlService) GetAll(page int, limit int) *models.ResponseMessage {
 	var data []models.PuntoControl
 	offset := (page - 1) * limit
-	err := service.db.Limit(limit).Offset(offset).Preload("Paquete").Preload("Ruta").Find(&data).Error
+	err := service.db.Limit(limit).Offset(offset).Preload("Paquetes").Preload("Ruta").Preload("Ruta.Destino").Find(&data).Error
 	if err != nil {
 		return &models.ResponseMessage{IsSuccessfull: false, Message: err.Error()}
 	}
@@ -167,7 +183,7 @@ func (service *PuntoControlService) GetCostoPaquetesPuntosControlByPaquete(paque
 func (service *PuntoControlService) GetTiempoTotalEnRuta(paquete models.Paquete) (float64, error) {
 
 	var paquetePuntosControls []models.PaquetesPuntosControl
-	ruta, errors := service.GetRutaActualPaquete(paquete.ID)
+	ruta, errors := service.GetRutaActualPaquete(int(paquete.ID))
 	if errors != nil {
 		return 0, errors
 	}
@@ -184,8 +200,8 @@ func (service *PuntoControlService) GetTiempoTotalEnRuta(paquete models.Paquete)
 	return timpoTotal, nil
 }
 func (service *PuntoControlService) GetRutaActualPaquete(paqueteID int) (*models.Ruta, error) {
-	var paqueteRuta models.PaqueteRuta
-	err := service.db.Model(&models.PaqueteRuta{}).Where("paquete_id = ?", paqueteID).Order("created_at desc").First(&paqueteRuta).Error
+	var paqueteRuta models.PaquetesRutas
+	err := service.db.Model(&models.PaquetesRutas{}).Where("paquete_id = ?", paqueteID).Order("created_at desc").First(&paqueteRuta).Error
 	if err != nil {
 		return nil, err
 	}

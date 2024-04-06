@@ -8,6 +8,7 @@ import (
 	"p1-backend/api/pkg/middleware"
 	"p1-backend/api/pkg/models"
 	"p1-backend/api/pkg/routes"
+	"p1-backend/api/pkg/utils"
 
 	"github.com/gorilla/mux"
 	"gorm.io/driver/mysql"
@@ -37,16 +38,17 @@ func (app *App) Initialize(config *config.Config) {
 	fmt.Println("Conexion con la base de datos exitosa!")
 	app.DB = db
 
-	errMigrate := app.DB.AutoMigrate(&models.Usuario{},
-		&models.Cliente{},
-		&models.Paquete{},
-		&models.Destino{},
-		&models.Ruta{},
-		&models.Factura{},
-		&models.Tarifas{},
+	errMigrate := app.DB.AutoMigrate(
+		// &models.Usuario{},
+		// &models.Cliente{},
+		// &models.Paquete{},
+		// &models.Destino{},
+		// &models.Ruta{},
 		// &models.Bodega{},
 		// &models.PaquetesDestinos{},
-		&models.PuntoControl{},
+		// &models.PuntoControl{},
+		&models.Factura{},
+		&models.Tarifas{},
 		&models.PaquetesPuntosControl{})
 	if errMigrate != nil {
 		log.Fatal(errMigrate)
@@ -60,28 +62,30 @@ func (app *App) Initialize(config *config.Config) {
 }
 
 func (app *App) Run(host string) {
-	fmt.Printf("El servidor en: http://localhost%s\n", host)
+	// fmt.Printf("El servidor en: http://localhost%s\n", host)
 	log.Fatal(http.ListenAndServe(host, app.Router))
 }
 
 func (app *App) initRouters() {
-	routes.InitRutaRoutes(app.Router, app.DB, app.authorizeRequest)
 	routes.InitUsuarioRoutes(app.Router, app.DB, app.authorizeRequest)
+	routes.InitDestinoRoutes(app.Router, app.DB, app.authorizeRequest)
+	routes.InitRutaRoutes(app.Router, app.DB, app.authorizeRequest)
+	routes.InitPuntoControlRoutes(app.Router, app.DB, app.authorizeRequest)
 	routes.InitClienteRoutes(app.Router, app.DB, app.authorizeRequest)
 	routes.InitPaqueteRoutes(app.Router, app.DB, app.authorizeRequest)
-	routes.InitPuntoControlRoutes(app.Router, app.DB, app.authorizeRequest)
-
-	errorRoutes := getRoutes(app.Router, app.Config.ServerHost)
+	bodegaUtil := utils.InitializeBodegaUtil(app.DB)
+	go bodegaUtil.IniciarProcesoAutoBodega()
+	errorRoutes := printRoutes(app.Router, app.Config.ServerHost)
 	if errorRoutes != nil {
 		fmt.Println("Error al obtener las rutas:", errorRoutes)
 	}
 }
 
-func getRoutes(Router *mux.Router, serverURL string) error {
+func printRoutes(Router *mux.Router, serverURL string) error {
 	errorRoutes := Router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, err := route.GetPathTemplate()
 		if err == nil {
-			fmt.Printf("Ruta: http://localhost%s%s\n", serverURL, pathTemplate)
+			fmt.Printf("http://localhost%s%s\n", serverURL, pathTemplate)
 		}
 		return nil
 	})

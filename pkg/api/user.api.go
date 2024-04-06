@@ -112,7 +112,7 @@ func (api *UsuarioApi) ChangeStateUser() http.HandlerFunc {
 		}
 		defer r.Body.Close()
 
-		response := api.service.ChangeStateUser(usuario.ID, usuario.Activo)
+		response := api.service.ChangeStateUser(int(usuario.ID), usuario.Activo)
 		status := http.StatusOK
 
 		if !response.IsSuccessfull {

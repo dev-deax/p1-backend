@@ -75,7 +75,7 @@ func (api *RutaApi) ChangeStateRuta() http.HandlerFunc {
 		}
 		defer r.Body.Close()
 
-		response := api.service.ChangeStateRuta(ruta.ID, ruta.Activo)
+		response := api.service.ChangeStateRuta(int(ruta.ID), ruta.Activo)
 		status := http.StatusOK
 
 		if !response.IsSuccessfull {

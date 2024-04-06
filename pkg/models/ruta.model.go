@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Ruta struct {
 	gorm.Model
-	ID        int       `json:"id"`
+	ID        int       `gorm:"primaryKey"`
 	Nombre    string    `gorm:"type:varchar(255)" json:"nombre"`
 	Capacidad int       `gorm:"type:int" json:"capacidad"`
 	Activo    bool      `gorm:"default:true" json:"activo"`

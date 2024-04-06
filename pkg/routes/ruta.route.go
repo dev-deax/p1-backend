@@ -13,4 +13,5 @@ func InitRutaRoutes(router *mux.Router, db *gorm.DB, authorizeRequest func(next 
 	rutaRouter := router.PathPrefix("/ruta").Subrouter()
 	rutaRouter.Handle("/create", authorizeRequest(rutaApi.CreateRuta(), true)).Methods("POST")
 	rutaRouter.Handle("/change_state", authorizeRequest(rutaApi.ChangeStateRuta(), true)).Methods("POST")
+	rutaRouter.Handle("/list", authorizeRequest(rutaApi.GetAll(), true)).Methods("GET")
 }

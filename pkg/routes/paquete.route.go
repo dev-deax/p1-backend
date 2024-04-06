@@ -12,6 +12,6 @@ func InitPaqueteRoutes(router *mux.Router, db *gorm.DB, authorizeRequest func(ne
 	PaqueteApi := api.InitializePaqueteApi(db)
 	PaqueteRouter := router.PathPrefix("/Paquete").Subrouter()
 	PaqueteRouter.Handle("/create_factura", authorizeRequest(PaqueteApi.CrearFactura(), true)).Methods("POST")
-	PaqueteRouter.Handle("/asignar_ruta", authorizeRequest(PaqueteApi.AsignarPaqueteRuta(), true)).Methods("POST")
 	PaqueteRouter.Handle("/id", authorizeRequest(PaqueteApi.GetPaqueteByID(), true)).Methods("GET")
+	PaqueteRouter.Handle("/all_facturas", authorizeRequest(PaqueteApi.GetFacturaAll(), true)).Methods("GET")
 }

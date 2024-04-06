@@ -49,6 +49,5 @@ func (config *Config) DatabaseURI() string {
 		config.password,
 		config.dbHost, config.dbPort,
 		config.dbName)
-	log.Printf(dbURI)
 	return dbURI
 }

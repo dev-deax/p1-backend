@@ -21,26 +21,6 @@ func InitializePaqueteApi(db *gorm.DB) *PaqueteApi {
 	return &PaqueteApi
 }
 
-func (api *PaqueteApi) AsignarPaqueteRuta() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var paqueteRuta models.PaqueteRuta
-		if err := json.NewDecoder(r.Body).Decode(&paqueteRuta); err != nil {
-			ResponseWithError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		defer r.Body.Close()
-
-		response := api.service.AsignarPaqueteARuta(paqueteRuta.PaqueteID, paqueteRuta.RutaID)
-		status := http.StatusOK
-
-		if !response.IsSuccessfull {
-			status = http.StatusBadGateway
-		}
-
-		RespondWithJSON(w, status, response)
-	}
-}
-
 func (api *PaqueteApi) GetPaqueteByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -71,6 +51,26 @@ func (api *PaqueteApi) CrearFactura() http.HandlerFunc {
 		defer r.Body.Close()
 
 		response := api.service.CrearFactura(factura)
+		status := http.StatusOK
+
+		if !response.IsSuccessfull {
+			status = http.StatusBadGateway
+		}
+
+		RespondWithJSON(w, status, response)
+	}
+}
+
+func (api *PaqueteApi) GetFacturaAll() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		page, errorPage := strconv.Atoi(r.URL.Query().Get("page"))
+		limit, errorLimit := strconv.Atoi(r.URL.Query().Get("limit"))
+
+		if errorPage != nil || errorLimit != nil {
+			page = 1
+			limit = 10
+		}
+		response := api.service.GetFacturaAll(page, limit)
 		status := http.StatusOK
 
 		if !response.IsSuccessfull {

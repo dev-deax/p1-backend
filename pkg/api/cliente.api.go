@@ -58,3 +58,18 @@ func (api *ClienteApi) GetAll() http.HandlerFunc {
 		RespondWithJSON(w, http.StatusOK, response)
 	}
 }
+func (api *ClienteApi) GetById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, errorId := strconv.Atoi(r.URL.Query().Get("id"))
+		if errorId != nil {
+			ResponseWithError(w, http.StatusBadRequest, errorId.Error())
+			return
+		}
+		response := api.service.GetById(id)
+		if !response.IsSuccessfull {
+			ResponseWithError(w, http.StatusInternalServerError, response.Message)
+			return
+		}
+		RespondWithJSON(w, http.StatusOK, response)
+	}
+}

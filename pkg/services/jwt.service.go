@@ -10,13 +10,13 @@ import (
 )
 
 func GenerateToken(user *models.Usuario) (models.Token, error) {
-	expiration := time.Now().Add(time.Hour * 7)
+	expiration := time.Now().Add(time.Hour * 8)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email":      user.Email,
 		"name":       user.Nombre,
 		"apellido":   user.Apellido,
 		"rol_id":     user.RolID,
-		"id":         strconv.Itoa(user.ID),
+		"id":         strconv.Itoa(int(user.ID)),
 		"expiration": expiration.Unix(),
 	})
 	secret := os.Getenv("JWT_SECRET")
