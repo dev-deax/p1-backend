@@ -157,6 +157,25 @@ func (api *PuntoControlApi) GetPaquetesPuntosControlByUsuario() http.HandlerFunc
 		RespondWithJSON(w, status, response)
 	}
 }
+func (api *PuntoControlApi) GetPaquetesProcesarPuntosControl() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var model models.Usuario
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&model); err != nil {
+			ResponseWithError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		defer r.Body.Close()
+
+		response := api.service.GetPaquetesProcesarPuntosControl(int(model.ID),model.RolID)
+		status := http.StatusOK
+
+		if !response.IsSuccessfull {
+			status = http.StatusBadGateway
+		}
+		RespondWithJSON(w, status, response)
+	}
+}
 func (api *PuntoControlApi) GetCostoByPuntoControl() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var model models.PuntoControl

@@ -20,4 +20,5 @@ func InitPuntoControlRoutes(router *mux.Router, db *gorm.DB, authorizeRequest fu
 	PuntoControlRouter.Handle("/all", authorizeRequest(PuntoControlApi.GetAll(), true)).Methods("GET")
 	PuntoControlRouter.Handle("/id", authorizeRequest(PuntoControlApi.GetByIdPuntoControl(), true)).Methods("GET")
 	PuntoControlRouter.Handle("/paquete_usuario", authorizeRequest(PuntoControlApi.GetPaquetesPuntosControlByUsuario(), true)).Methods("GET")
+	PuntoControlRouter.Handle("/paquete_sin_procesar", authorizeRequest(PuntoControlApi.GetPaquetesProcesarPuntosControl(), true)).Methods("GET")
 }

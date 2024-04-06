@@ -110,7 +110,7 @@ func (service *PuntoControlService) ProcesarPaquete(paqueteID int, puntoControlI
 }
 func (service *PuntoControlService) GetPuntoControlByUsuarioID(UsuarioID int) (*models.PuntoControl, error) {
 	var puntoControl models.PuntoControl
-	err := service.db.Where("user_id = ?", UsuarioID).First(&puntoControl).Error
+	err := service.db.Where("usuario = ?", UsuarioID).First(&puntoControl).Error
 	return &puntoControl, err
 }
 func (service *PuntoControlService) GetPaquetesPuntosControlByUsuario(UsuarioID int) *models.ResponseMessage {
@@ -124,6 +124,42 @@ func (service *PuntoControlService) GetPaquetesPuntosControlByUsuario(UsuarioID 
 		return &models.ResponseMessage{IsSuccessfull: false, Message: err.Error()}
 	}
 	return &models.ResponseMessage{IsSuccessfull: true, Message: "PaquetesPuntosControl obtenidos exitosamente", Data: paquetesPuntosControl}
+}
+func (service *PuntoControlService) GetPuntoControlsByUsuarioID(UsuarioID int) (*[]models.PuntoControl, error) {
+	var puntoControls []models.PuntoControl
+	err := service.db.Where("usuario_id = ?", UsuarioID).Find(&puntoControls).Error
+	return &puntoControls, err
+}
+func (service *PuntoControlService) GetPaquetesProcesarPuntosControl(UsuarioID int, puntoControlID int) *models.ResponseMessage {
+
+	var paquetes []models.Paquete
+	query := service.db.
+		Joins("INNER JOIN paquetes_rutas ON paquetes.id = paquetes_rutas.paquete_id").
+		Joins("INNER JOIN punto_controls ON paquetes_rutas.ruta_id = punto_controls.id").
+		Joins("INNER JOIN usuarios ON punto_controls.usuario_id = usuarios.id").
+		Where("paquetes.estado_id = ?", 2).
+		Where("usuarios.id = ?", UsuarioID).
+		Where("paquetes.deleted_at IS NULL")
+
+	if puntoControlID != 0 {
+		query = query.Where("punto_controls.id = ?", puntoControlID)
+	}
+	err := query.
+		Find(&paquetes).
+		Error
+
+	if err != nil {
+		return &models.ResponseMessage{IsSuccessfull: false, Message: err.Error()}
+	}
+
+	// var paquetesPuntosControl []models.PaquetesPuntosControl
+	// err = service.db.
+	// 	Where("punto_control_id = ?", puntoControl.ID).
+	// 	Find(&paquetesPuntosControl).Error
+	// if err != nil {
+	// 	return &models.ResponseMessage{IsSuccessfull: false, Message: err.Error()}
+	// }
+	return &models.ResponseMessage{IsSuccessfull: true, Message: "PaquetesPuntosControl obtenidos exitosamente", Data: paquetes}
 }
 func (service *PuntoControlService) GetCostoPaquetesPuntosControlByPuntoControl(puntoControlID int) *models.ResponseMessage {
 	var PuntoControl models.PuntoControl
